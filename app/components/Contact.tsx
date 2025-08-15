@@ -46,17 +46,25 @@ const Contact = () => {
       message is ${formData.message.trim()}`
     }
 
-    emailjs.send("service_zkpm52a", "template_ey2s29b", sanitizedData, "PQWlAdLwnwWERsK7m").then((response) => {
-      console.log("response===", response);
-      
-        if (response.status === 200) {
+    const serviceId = process.env.NEXT_PUBLIC_SERVICE_SERVICE_ID ?? '';
+    const templateId = process.env.NEXT_PUBLIC_SERVICE_TEMPLATE_ID ?? '';
+    const publicKey = process.env.NEXT_PUBLIC_SERVICE_PUBLIC_KEY ?? '';
+    
+    if (!serviceId || !templateId || !publicKey) {
+      alert('Email service configuration is missing. Please contact the site owner.');
+      setIsLoading(false);
+      return;
+    }
+
+    emailjs.send(serviceId, templateId, sanitizedData, publicKey).then((response) => {
+
+      if (response.status === 200) {
         alert('Thank you for your message! I will get back to you soon.');
         setFormData({ name: '', email: '', subject: '', message: '' });
       } else {
         alert('Some technical issue. Please connect via email or phone.');
       }
     }).catch((error) => {
-      console.log("error===", error);
       alert('Some technical issue. Please connect via email or phone.');
     }).finally(() => {
       setIsLoading(false);
