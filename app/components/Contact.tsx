@@ -8,7 +8,8 @@ const Contact = () => {
     email: '',
     subject: '',
     message: ''
-  })
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -17,13 +18,33 @@ const Contact = () => {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
-    console.log('Form submitted:', formData)
-    // You can integrate with email service or backend API here
-    alert('Thank you for your message! I will get back to you soon.')
-    setFormData({ name: '', email: '', subject: '', message: '' })
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('Thank you for your message! I will get back to you soon.')
+        setFormData({ name: '', email: '', subject: '', message: '' })
+      } else {
+        alert('Sorry for the inconvenience. Please connect via email/phone number')
+      }
+    } catch (error) {
+      alert('Sorry for the inconvenience. Please connect via email/phone number')
+      console.error('Submission error:', error);
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const contactInfo = [
@@ -109,7 +130,7 @@ const Contact = () => {
             <h3 className="text-2xl font-bold text-gray-900 mb-8">
               Let's Connect
             </h3>
-            
+
             <div className="space-y-6 mb-8">
               {contactInfo.map((info, index) => (
                 <div key={index} className="flex items-center gap-4">
@@ -153,11 +174,11 @@ const Contact = () => {
             {/* Availability Status */}
             <div className="mt-8 p-6 bg-white rounded-xl card-shadow">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                 <span className="font-semibold text-gray-900">Available for Work</span>
               </div>
               <p className="text-gray-600 text-sm">
-                Currently open to new opportunities and exciting projects. 
+                Currently open to new opportunities and exciting projects.
                 Let's discuss how I can contribute to your team's success.
               </p>
             </div>
@@ -169,7 +190,7 @@ const Contact = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-6">
                 Send a Message
               </h3>
-              
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -203,7 +224,7 @@ const Contact = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                     Subject *
@@ -219,7 +240,7 @@ const Contact = () => {
                     placeholder="Project Discussion"
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                     Message *
@@ -235,10 +256,11 @@ const Contact = () => {
                     placeholder="Tell me about your project or how I can help you..."
                   />
                 </div>
-                
+
                 <button
                   type="submit"
-                  className="w-full btn-primary justify-center"
+                  className={isLoading ? "w-full btn-secondary justify-center" : "w-full btn-primary justify-center"}
+                  disabled={isLoading}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -254,4 +276,4 @@ const Contact = () => {
   )
 }
 
-export default Contact
+export default Contact;
