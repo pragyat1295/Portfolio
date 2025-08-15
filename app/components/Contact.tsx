@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState } from 'react';
+import emailjs from '@emailjs/browser';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -18,32 +19,48 @@ const Contact = () => {
     })
   }
 
-  const handleSubmit = async(e: React.FormEvent) => {
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        alert('Thank you for your message! I will get back to you soon.')
-        setFormData({ name: '', email: '', subject: '', message: '' })
-      } else {
-        alert('Some technical issue. Please connect via email or phone.')
-      }
-    } catch (error) {
-      alert('Some technical issue. Please connect via email or phone.')
-    } finally {
+    if(!validateEmail(formData.email)) {
+      alert('Please enter a valid email address.')
       setIsLoading(false)
+      return
     }
+    if (!formData.name.trim() || !formData.subject.trim() || !formData.message.trim()) {
+      alert('Please fill in all fields.')
+      setIsLoading(false)
+      return
+    }
+
+    const sanitizedData = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      message: `Subject is: ${formData.subject.trim()} 
+      message is ${formData.message.trim()}`
+    }
+
+    emailjs.send("service_zkpm52a", "template_ey2s29b", sanitizedData, "PQWlAdLwnwWERsK7m").then((response) => {
+      console.log("response===", response);
+      
+        if (response.status === 200) {
+        alert('Thank you for your message! I will get back to you soon.');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        alert('Some technical issue. Please connect via email or phone.');
+      }
+    }).catch((error) => {
+      console.log("error===", error);
+      alert('Some technical issue. Please connect via email or phone.');
+    }).finally(() => {
+      setIsLoading(false);
+    });
   }
 
   const contactInfo = [
@@ -129,7 +146,7 @@ const Contact = () => {
             <h3 className="text-2xl font-bold text-gray-900 mb-8">
               Let's Connect
             </h3>
-            
+
             <div className="space-y-6 mb-8">
               {contactInfo.map((info, index) => (
                 <div key={index} className="flex items-center gap-4">
@@ -177,7 +194,7 @@ const Contact = () => {
                 <span className="font-semibold text-gray-900">Available for Work</span>
               </div>
               <p className="text-gray-600 text-sm">
-                Currently open to new opportunities and exciting projects. 
+                Currently open to new opportunities and exciting projects.
                 Let's discuss how I can contribute to your team's success.
               </p>
             </div>
@@ -189,7 +206,7 @@ const Contact = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-6">
                 Send a Message
               </h3>
-              
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -223,7 +240,7 @@ const Contact = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                     Subject *
@@ -239,7 +256,7 @@ const Contact = () => {
                     placeholder="Project Discussion"
                   />
                 </div>
-                
+
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                     Message *
@@ -255,7 +272,7 @@ const Contact = () => {
                     placeholder="Tell me about your project or how I can help you..."
                   />
                 </div>
-                
+
                 <button
                   type="submit"
                   className="w-full btn-primary justify-center"
