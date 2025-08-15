@@ -7,7 +7,7 @@ export async function POST(request) {
     const { name, email, subject, message } = await request.json();
 
     // Log environment variables for debugging (remove in production)
-    console.log('SMTP Config:', {
+    console.log('SMTP Config:', { 
       host: process.env.SMTP_SERVER_HOST,
       port: process.env.SMTP_SERVER_PORT,
       user: process.env.SMTP_SERVER_USERNAME ? 'Set' : 'Not set',
